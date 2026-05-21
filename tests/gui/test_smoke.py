@@ -84,6 +84,20 @@ def test_mainwindow_walks_all_screens(
         assert str(add_btn.cget("style")) == "Primary.TButton"
         assert add_btn.cget("text").startswith("＋")
 
+        # v1.1.1: the deck-detail tabs are styled for visibility — wider
+        # padding, a bold font, and a selected/unselected color contrast.
+        from tkinter import ttk
+
+        nb_style = ttk.Style()
+        assert nb_style.lookup("TNotebook.Tab", "padding") != ""
+        assert nb_style.lookup("TNotebook.Tab", "font") != ""
+        tab_fg_selected = nb_style.lookup(
+            "TNotebook.Tab", "foreground", ["selected"]
+        )
+        tab_fg_unselected = nb_style.lookup("TNotebook.Tab", "foreground")
+        assert tab_fg_selected and tab_fg_unselected
+        assert tab_fg_selected != tab_fg_unselected
+
         # --- edit-mode CardDialog: tab bindings + result/return -------------
         existing = detail.deck.cards[0]
         dialog = CardDialog(

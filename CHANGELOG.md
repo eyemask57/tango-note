@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.1] - 2026-05-21
+
+### Changed
+
+- Improved tab visibility: larger font (11pt bold), wider padding for
+  easier clicks, and a distinct color for the selected tab
+
 ## [1.1.0] - 2026-05-21
 
 ### Added

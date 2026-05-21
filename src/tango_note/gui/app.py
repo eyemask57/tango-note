@@ -315,6 +315,42 @@ class DeckDetailScreen(ttk.Frame):
 
     # ----- UI ---------------------------------------------------------------
 
+    @staticmethod
+    def _style_notebook_tabs() -> None:
+        """Make the deck-detail tabs larger and easier to read (v1.1.1).
+
+        The tabs get wider padding (a bigger click target), a bold 11pt
+        font, and a distinct selected-vs-unselected color. The font
+        family is taken from ``TkDefaultFont`` so it stays correct on
+        every platform (it resolves to Yu Gothic UI on Windows).
+
+        Only the *foreground* color is relied on for the selected-state
+        cue: on the Windows "vista" ttk theme a tab's background is drawn
+        by the native renderer and ignores ``style.map`` — the same
+        constraint ``Primary.TButton`` works around. A background map is
+        set as well (harmless, and honored on themes that support it),
+        but the foreground contrast is what guarantees the selected tab
+        is always identifiable.
+        """
+        style = ttk.Style()
+        base = tkfont.nametofont("TkDefaultFont")
+        style.configure(
+            "TNotebook.Tab",
+            padding=[20, 10],
+            font=(base.cget("family"), 11, "bold"),
+        )
+        style.map(
+            "TNotebook.Tab",
+            background=[
+                ("selected", "#e8eef5"),
+                ("!selected", "#f5f5f5"),
+            ],
+            foreground=[
+                ("selected", "#1e3a5f"),
+                ("!selected", "#888888"),
+            ],
+        )
+
     def _build(self) -> None:
         # Top bar: back button + deck name
         top = ttk.Frame(self)
@@ -327,6 +363,7 @@ class DeckDetailScreen(ttk.Frame):
         ).pack(side="left", padx=12)
 
         # Tabbed body
+        self._style_notebook_tabs()
         notebook = ttk.Notebook(self)
         notebook.pack(fill="both", expand=True, padx=8, pady=6)
 
