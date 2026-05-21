@@ -1,0 +1,26 @@
+# Python bytecode / caches
+__pycache__/
+*.pyc
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.spec.bak
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+
+# Editor / IDE
+*.code-workspace
+
+# NOTE: Compiled gettext catalogs (locales/*/LC_MESSAGES/*.mo) are
+# intentionally NOT ignored — they are committed so that cloning the repo
+# does not require the `msgfmt` command to be available. Regenerate them
+# with `python tools/msgfmt.py` whenever the .po source changes.

@@ -1,0 +1,335 @@
+# tango-note Japanese translations.
+# Copyright (C) 2026 tango-note maintainers
+# This file is distributed under the same license as the tango-note package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: tango-note 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 12:00+0000\n"
+"PO-Revision-Date: 2026-05-12 12:00+0000\n"
+"Last-Translator: tango-note maintainers\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# Smoke-test entry used by tests/core/test_i18n.py.
+msgid "Hello"
+msgstr "こんにちは"
+
+# ---- CLI status / informational messages -----------------------------------
+
+msgid "Added card."
+msgstr "カードを追加しました．"
+
+msgid "Created deck: {name}"
+msgstr "デッキを作成しました: {name}"
+
+msgid "Current deck: {path}"
+msgstr "カレントデッキ: {path}"
+
+msgid "Exported to: {path}"
+msgstr "エクスポート先: {path}"
+
+msgid "Imported from: {path}"
+msgstr "インポート元: {path}"
+
+msgid "Empty deck."
+msgstr "デッキにカードがありません．"
+
+msgid "No decks found."
+msgstr "デッキが見つかりません．"
+
+# ---- CLI error messages ----------------------------------------------------
+
+msgid "Card not found."
+msgstr "カードが見つかりません．"
+
+msgid "Deck not found: {path}"
+msgstr "デッキが見つかりません: {path}"
+
+msgid "Invalid deck schema: {detail}"
+msgstr "デッキのスキーマが不正です: {detail}"
+
+msgid "No current deck set."
+msgstr "カレントデッキが設定されていません．"
+
+msgid "File already exists. Use --force to overwrite."
+msgstr "ファイルが既に存在します．--force で上書きしてください．"
+
+# ---- Quiz interaction ------------------------------------------------------
+
+msgid "[Enter to reveal, q to quit] "
+msgstr "[Enter で答えを表示, q で中断] "
+
+msgid "Correct? [y/n/q]: "
+msgstr "正解でしたか? [y/n/q]: "
+
+msgid "Correct!"
+msgstr "正解！"
+
+msgid "Wrong."
+msgstr "不正解．"
+
+msgid "Quit?"
+msgstr "中断しますか？"
+
+# ---- Statistics summary ----------------------------------------------------
+
+msgid "Total cards: {n}"
+msgstr "総カード数: {n}"
+
+msgid "Reviewed: {n}"
+msgstr "出題数: {n}"
+
+msgid "Accuracy: {p}"
+msgstr "正答率: {p}"
+
+# ---- GUI labels ------------------------------------------------------------
+
+msgid "Deck list"
+msgstr "デッキ一覧"
+
+msgid "Cards"
+msgstr "カード"
+
+msgid "Quiz"
+msgstr "出題"
+
+msgid "Stats"
+msgstr "統計"
+
+msgid "New deck"
+msgstr "新規"
+
+msgid "Import"
+msgstr "インポート"
+
+msgid "Add card"
+msgstr "追加"
+
+msgid "Add"
+msgstr "追加"
+
+msgid "Add card ({n} added)"
+msgstr "カードを追加 ({n} 件追加済み)"
+
+msgid "Term cannot be empty."
+msgstr "見出し語は空にできません．"
+
+msgid ""
+"A search filter is active; new cards may be hidden after the list "
+"refreshes."
+msgstr ""
+"検索フィルタが有効です．追加したカードは一覧の更新後に非表示になることが"
+"あります．"
+
+msgid "Delete card"
+msgstr "削除"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Save *"
+msgstr "保存 *"
+
+msgid "Show answer"
+msgstr "答えを表示"
+
+msgid "Correct"
+msgstr "正解"
+
+msgid "Wrong"
+msgstr "不正解"
+
+msgid "Term"
+msgstr "見出し語"
+
+msgid "Definition"
+msgstr "訳語"
+
+msgid "Notes"
+msgstr "メモ"
+
+msgid "Are you sure?"
+msgstr "本当によろしいですか？"
+
+msgid "Failed to load deck: {detail}"
+msgstr "デッキの読み込みに失敗しました: {detail}"
+
+msgid "No deck selected."
+msgstr "デッキが選択されていません．"
+
+msgid "Back"
+msgstr "戻る"
+
+msgid "Select"
+msgstr "選択"
+
+msgid "Source language"
+msgstr "見出し語の言語"
+
+msgid "Target language"
+msgstr "訳語の言語"
+
+msgid "Name"
+msgstr "名前"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "You have unsaved changes. Save before continuing?"
+msgstr "未保存の変更があります．保存しますか？"
+
+msgid "Refresh"
+msgstr "更新"
+
+# ---- Search / duplicates ---------------------------------------------------
+
+msgid "Search:"
+msgstr "検索："
+
+msgid "Duplicates"
+msgstr "重複"
+
+msgid "No matches found."
+msgstr "一致するカードが見つかりませんでした．"
+
+msgid "No duplicates found."
+msgstr "重複は見つかりませんでした．"
+
+msgid "Duplicate groups"
+msgstr "重複グループ"
+
+msgid "Group {n}"
+msgstr "グループ {n}"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "Cannot specify both --notes and --notes-file."
+msgstr "--notes と --notes-file は同時に指定できません．"
+
+msgid "Notes file not found: {path}"
+msgstr "メモファイルが見つかりません: {path}"
+
+# ---- Export ----------------------------------------------------------------
+
+msgid "Export"
+msgstr "エクスポート"
+
+msgid "Export deck"
+msgstr "デッキをエクスポート"
+
+msgid "Strip learning statistics?"
+msgstr "学習統計を除外しますか？"
+
+msgid ""
+"Choose 'Yes' to export without stats (suitable for sharing), 'No' to "
+"include stats."
+msgstr ""
+"「はい」で統計を除外して書き出します (共有向け) ．「いいえ」で統計込みで書き"
+"出します．"
+
+msgid "Export complete: {path}"
+msgstr "エクスポート完了: {path}"
+
+msgid "Export failed: {detail}"
+msgstr "エクスポートに失敗しました: {detail}"
+
+# ---- Menu bar / preferences ------------------------------------------------
+
+msgid "File"
+msgstr "ファイル"
+
+msgid "Tools"
+msgstr "ツール"
+
+msgid "Quit"
+msgstr "終了"
+
+msgid "Preferences..."
+msgstr "環境設定..."
+
+msgid "Preferences"
+msgstr "環境設定"
+
+msgid "Default action"
+msgstr "デフォルト動作"
+
+msgid "Ask each time (recommended)"
+msgstr "毎回ダイアログで確認 (推奨)"
+
+msgid "Always strip stats (suitable for sharing)"
+msgstr "常に統計を除外する (共有向け)"
+
+msgid "Always include stats (suitable for backup)"
+msgstr "常に統計を含める (バックアップ向け)"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Apply"
+msgstr "適用"
+
+# ---- Quiz modes ------------------------------------------------------------
+
+msgid "Quiz mode"
+msgstr "出題モード"
+
+msgid "Random"
+msgstr "ランダム"
+
+msgid "Weak first"
+msgstr "苦手優先"
+
+msgid "Long unreviewed"
+msgstr "長期未復習"
+
+msgid "No weak cards found."
+msgstr "苦手カードが見つかりません．"
+
+msgid "No long-unreviewed cards found."
+msgstr "長期未復習のカードが見つかりません．"
+
+# ---- Review-freshness stats ------------------------------------------------
+
+msgid "Review freshness"
+msgstr "復習頻度"
+
+msgid "Never reviewed"
+msgstr "未復習"
+
+msgid "Within a week"
+msgstr "直近1週間"
+
+msgid "Within a month"
+msgstr "1週間〜1ヶ月"
+
+msgid "Older than a month"
+msgstr "1ヶ月以上"
+
+msgid "Long unreviewed cards"
+msgstr "長期未復習カード"
+
+msgid "Last reviewed"
+msgstr "最終復習日"
+
+# ---- Quiz settings ---------------------------------------------------------
+
+msgid "Quiz"
+msgstr "出題"
+
+msgid "Weak threshold (accuracy %)"
+msgstr "苦手の基準 (正答率 %)"
+
+msgid "Unreviewed days threshold"
+msgstr "長期未復習の基準 (日)"
+
+msgid "Weak threshold must be an integer between 0 and 100."
+msgstr "苦手の基準は 0〜100 の整数で入力してください．"
+
+msgid "Unreviewed days must be an integer between 1 and 365."
+msgstr "長期未復習の基準は 1〜365 の整数で入力してください．"
