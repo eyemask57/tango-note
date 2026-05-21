@@ -37,3 +37,14 @@ class EmptyDeckError(TangoNoteError):
 
 class InvalidConfigError(TangoNoteError):
     """Raised when the user config file cannot be parsed or validated."""
+
+
+class StorageError(TangoNoteError):
+    """Raised when a deck-file operation fails at the filesystem level.
+
+    Distinct from :class:`DeckNotFoundError` (the file is simply absent)
+    and :class:`InvalidDeckSchemaError` (the file is present but
+    unreadable): this covers a present, locatable file that the OS
+    refused to remove or otherwise mutate — a permission error, a lock
+    held by another process, an I/O error, and the like.
+    """

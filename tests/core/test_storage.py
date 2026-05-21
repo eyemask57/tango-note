@@ -15,6 +15,7 @@ from tango_note.core.storage import (
     SUPPORTED_VERSION,
     deck_from_dict,
     deck_to_dict,
+    delete_deck,
     load_deck,
     save_deck,
 )
@@ -155,6 +156,22 @@ def test_save_produces_valid_json(tmp_path: Path, sample_deck: Deck) -> None:
     parsed = json.loads(p.read_text(encoding="utf-8"))
     assert parsed["version"] == SUPPORTED_VERSION
     assert parsed["deck"]["name"] == "French Basics"
+
+
+# ----- delete_deck -----------------------------------------------------------
+
+
+def test_delete_deck_removes_file(tmp_path: Path, sample_deck: Deck) -> None:
+    p = tmp_path / "deck.json"
+    save_deck(sample_deck, p)
+    assert p.exists()
+    delete_deck(p)
+    assert not p.exists()
+
+
+def test_delete_deck_raises_when_missing(tmp_path: Path) -> None:
+    with pytest.raises(DeckNotFoundError):
+        delete_deck(tmp_path / "missing.json")
 
 
 # ----- version validation ----------------------------------------------------

@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.0] - 2026-05-21
+
+### Added
+
+- Deck deletion from the GUI deck list and the CLI (`delete-deck`), each
+  with a confirmation prompt that defaults to "No"
+- Cards found via search can now be deleted directly (the Delete button
+  was previously disabled while a search filter was active)
+- Clear button (×) for the card search bar
+- ESC key shortcut to clear the search bar
+
+### Changed
+
+- The "Add Card" button moved to the top bar next to the search field,
+  with prominent navy, bold styling
+- The notes field in the card editor is larger (6 lines by default) and
+  the dialog is now resizable
+
 ## [1.0.0] - 2026-05-21
 
 ### Initial release

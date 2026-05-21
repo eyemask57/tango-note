@@ -333,3 +333,35 @@ msgstr "苦手の基準は 0〜100 の整数で入力してください．"
 
 msgid "Unreviewed days must be an integer between 1 and 365."
 msgstr "長期未復習の基準は 1〜365 の整数で入力してください．"
+
+# ---- Deck / card deletion (v1.1.0) -----------------------------------------
+
+msgid "Delete"
+msgstr "削除"
+
+msgid "Delete deck"
+msgstr "デッキの削除"
+
+msgid ""
+"Delete the deck '{name}' ({n} cards). "
+"This action cannot be undone. Continue?"
+msgstr ""
+"デッキ '{name}' (カード {n} 枚) を削除します．"
+"この操作は取り消せません．続行しますか？"
+
+msgid "Deleted deck: {name}"
+msgstr "デッキを削除しました: {name}"
+
+msgid "Cancelled."
+msgstr "中止しました．"
+
+msgid "Delete the card '{term}'?"
+msgstr "カード '{term}' を削除しますか？"
+
+msgid "Delete {n} cards?"
+msgstr "{n} 枚のカードを削除しますか？"
+
+# ---- Add card button (v1.1.0) ----------------------------------------------
+
+msgid "Add Card"
+msgstr "カード追加"

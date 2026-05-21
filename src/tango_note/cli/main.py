@@ -7,6 +7,7 @@ Subcommands:
 * ``list`` — show all cards in a deck
 * ``list-decks`` — show all known decks
 * ``use`` — switch the current deck
+* ``delete-deck`` — permanently delete a deck file
 * ``quiz`` — interactive review session
 * ``stats`` — print deck-level statistics
 * ``export`` — copy a deck to an arbitrary destination
@@ -69,6 +70,7 @@ from tango_note.core.exceptions import (  # noqa: E402
     EmptyDeckError,
     InvalidConfigError,
     InvalidDeckSchemaError,
+    StorageError,
 )
 from tango_note.core.i18n import setup_i18n  # noqa: E402
 from tango_note.core.models import Card, Deck, DeckMeta  # noqa: E402
@@ -84,6 +86,7 @@ from tango_note.core.stats import (  # noqa: E402
     record_wrong,
 )
 from tango_note.core.storage import (  # noqa: E402
+    delete_deck,
     export_deck,
     load_deck,
     save_deck,
@@ -173,6 +176,9 @@ def _handle_core_errors(func: Callable) -> Callable:
         except InvalidConfigError as e:
             typer.echo(str(e), err=True)
             raise typer.Exit(code=2)
+        except StorageError as e:
+            typer.echo(str(e), err=True)
+            raise typer.Exit(code=1)
 
     return wrapper
 
@@ -418,6 +424,36 @@ def use(
     cfg.current_deck = str(path)
     save_config(cfg)
     typer.echo(_t("Current deck: {path}").format(path=path))
+
+
+@app.command(name="delete-deck")
+@_handle_core_errors
+def delete_deck_cmd(
+    deck: Path = typer.Argument(..., help="Deck file path to delete."),
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Delete without asking for confirmation."
+    ),
+) -> None:
+    """Permanently delete a deck file (this cannot be undone).
+
+    The deck is loaded first so the confirmation prompt can show its
+    name and card count; a corrupt deck file therefore fails with the
+    usual schema-error exit code rather than being deletable here (use
+    the GUI deck list, or remove the file manually, for that case).
+    """
+    d = load_deck(deck)
+    if not force:
+        confirmed = typer.confirm(
+            _t(
+                "Delete the deck '{name}' ({n} cards). "
+                "This action cannot be undone. Continue?"
+            ).format(name=d.meta.name, n=len(d.cards))
+        )
+        if not confirmed:
+            typer.echo(_t("Cancelled."))
+            raise typer.Exit(code=0)
+    delete_deck(deck)
+    typer.echo(_t("Deleted deck: {name}").format(name=d.meta.name))
 
 
 class _QuizModeChoice(str, enum.Enum):

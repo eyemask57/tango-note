@@ -376,6 +376,7 @@ def test_help_lists_all_subcommands(cli_home: Path) -> None:
         "duplicates",
         "list-decks",
         "use",
+        "delete-deck",
         "quiz",
         "stats",
         "export",
@@ -677,3 +678,43 @@ def test_stats_stale_lists_long_unreviewed(cli_home: Path) -> None:
     assert "長期未復習カード" in result.output
     # The never-reviewed card is listed as stale.
     assert "bonjour" in result.output
+
+
+# ----- delete-deck ----------------------------------------------------------
+
+
+def test_delete_deck_cmd_force(cli_home: Path) -> None:
+    """--force deletes the deck file without prompting."""
+    runner.invoke(app, ["init", "Doomed"])
+    deck_path = Path(_read_config(cli_home)["current_deck"])
+    assert deck_path.exists()
+    result = runner.invoke(app, ["delete-deck", str(deck_path), "--force"])
+    assert result.exit_code == 0, result.output
+    assert not deck_path.exists()
+
+
+def test_delete_deck_cmd_requires_confirmation(cli_home: Path) -> None:
+    """Answering 'n' at the prompt aborts and keeps the deck file."""
+    runner.invoke(app, ["init", "Keep me"])
+    deck_path = Path(_read_config(cli_home)["current_deck"])
+    result = runner.invoke(app, ["delete-deck", str(deck_path)], input="n\n")
+    assert result.exit_code == 0, result.output
+    assert deck_path.exists()  # not deleted
+
+
+def test_delete_deck_cmd_confirmed_yes_deletes(cli_home: Path) -> None:
+    """Answering 'y' at the prompt deletes the deck file."""
+    runner.invoke(app, ["init", "Bye"])
+    deck_path = Path(_read_config(cli_home)["current_deck"])
+    result = runner.invoke(app, ["delete-deck", str(deck_path)], input="y\n")
+    assert result.exit_code == 0, result.output
+    assert not deck_path.exists()
+
+
+def test_delete_deck_cmd_missing_file_errors(
+    cli_home: Path, tmp_path: Path
+) -> None:
+    result = runner.invoke(
+        app, ["delete-deck", str(tmp_path / "nope.json"), "--force"]
+    )
+    assert result.exit_code == 1

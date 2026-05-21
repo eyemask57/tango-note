@@ -78,6 +78,12 @@ def test_mainwindow_walks_all_screens(
 
         detail = window._current_screen
 
+        # A-2: the Add-card button sits in the top bar, styled prominently
+        # ("Primary.TButton") with a leading "＋" glyph.
+        add_btn = detail.card_tab.add_btn
+        assert str(add_btn.cget("style")) == "Primary.TButton"
+        assert add_btn.cget("text").startswith("＋")
+
         # --- edit-mode CardDialog: tab bindings + result/return -------------
         existing = detail.deck.cards[0]
         dialog = CardDialog(
@@ -86,6 +92,11 @@ def test_mainwindow_walks_all_screens(
         window.root.update_idletasks()
         assert dialog.notes_text.bind("<Tab>") != ""
         assert dialog.notes_text.bind("<Shift-Tab>") != ""
+        # A-4: the notes field is roomier (>= 6 lines) and the dialog is
+        # resizable so long notes have room to grow.
+        assert int(dialog.notes_text.cget("height")) >= 6
+        resize_w, resize_h = dialog.resizable()
+        assert int(resize_w) == 1 and int(resize_h) == 1
         # Edit OK returns the (term, definition, notes) tuple.
         dialog.term_var.set("EDITED")
         dialog._on_ok()
@@ -141,6 +152,59 @@ def test_mainwindow_walks_all_screens(
         rows_before = len(detail.card_tab.tree.get_children())
         detail.card_tab._insert_card_row(added[0])
         assert len(detail.card_tab.tree.get_children()) == rows_before + 1
+
+        # --- A-3: a card can be deleted while a search filter is active ----
+        card_tab = detail.card_tab
+        # The deck holds "bonjour" (pre-seeded) and "hola" (added above).
+        card_tab.search_var.set("hola")
+        card_tab._on_search_key(None)
+        window.root.update_idletasks()
+        # Delete must stay enabled while a filter is active.
+        assert str(card_tab.delete_btn.cget("state")) != "disabled"
+        # The filtered table shows only the matching card; select+delete it.
+        visible = card_tab.tree.get_children()
+        assert len(visible) == 1
+        card_tab.tree.selection_set(visible[0])
+        monkeypatch.setattr(
+            card_edit.messagebox, "askyesno", lambda *a, **k: True
+        )
+        card_tab._on_delete()
+        window.root.update_idletasks()
+        terms = [c.term for c in detail.deck.cards]
+        assert "hola" not in terms  # the searched-for card was removed
+        assert "bonjour" in terms  # a non-matching card survived
+        # Clear the filter again for the rest of the test.
+        card_tab.search_var.set("")
+        card_tab._on_search_key(None)
+        window.root.update_idletasks()
+
+        # --- A-5: the search bar has a one-click / ESC clear --------------
+        # With an empty field the clear button is not shown.
+        card_tab.search_var.set("")
+        card_tab._on_search_key(None)
+        assert card_tab.clear_btn.winfo_manager() == ""
+        # Typing a query reveals the clear button.
+        card_tab.search_var.set("apple")
+        card_tab._on_search_key(None)
+        window.root.update_idletasks()
+        assert card_tab.clear_btn.winfo_manager() == "pack"
+        # The "×" button clears the field, hides itself, shows all cards.
+        card_tab._clear_search()
+        window.root.update_idletasks()
+        assert card_tab.search_var.get() == ""
+        assert card_tab.clear_btn.winfo_manager() == ""
+        assert len(card_tab.tree.get_children()) == len(detail.deck.cards)
+        # ESC inside the search entry is bound and actually fires: the
+        # <Escape> binding (dispatched here via event_generate) clears it.
+        assert card_tab.search_entry.bind("<Escape>") != ""
+        card_tab.search_var.set("apple")
+        card_tab._on_search_key(None)
+        window.root.update_idletasks()
+        card_tab.search_entry.focus_force()
+        card_tab.search_entry.event_generate("<Escape>", when="now")
+        window.root.update_idletasks()
+        assert card_tab.search_var.get() == ""
+        assert card_tab.clear_btn.winfo_manager() == ""
 
         # The menu bar and its accelerators live on the root window and
         # must persist across screen swaps.
@@ -228,6 +292,16 @@ def test_mainwindow_walks_all_screens(
         window.root.update_idletasks()
         # The deck-list screen carries no deck name and no asterisk.
         assert window.root.title() == "tango-note"
+
+        # --- A-1: the deck-list screen exposes a Delete button -------------
+        deck_list = window._current_screen
+        # Disabled until a deck is selected...
+        assert str(deck_list.delete_btn.cget("state")) == "disabled"
+        # ...and enabled once one is.
+        assert deck_list.listbox.size() > 0
+        deck_list.listbox.selection_set(0)
+        deck_list._on_listbox_select()
+        assert str(deck_list.delete_btn.cget("state")) == "normal"
     finally:
         window.root.destroy()
 

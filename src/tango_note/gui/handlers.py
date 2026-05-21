@@ -39,11 +39,14 @@ class DeckEntry:
             stem as a fallback so unloadable decks still appear.
         is_current: ``True`` if this is the deck currently marked as
             active in the user config.
+        card_count: Number of cards in the deck, or ``0`` when the deck
+            file could not be loaded.
     """
 
     path: Path
     name: str
     is_current: bool
+    card_count: int
 
 
 def list_known_decks() -> list[DeckEntry]:
@@ -74,9 +77,16 @@ def _make_entry(path: Path, current: Optional[Path]) -> DeckEntry:
     try:
         deck = _storage.load_deck(path)
         name = deck.meta.name
+        card_count = len(deck.cards)
     except (InvalidDeckSchemaError, DeckNotFoundError):
         name = path.stem
-    return DeckEntry(path=path, name=name, is_current=(path == current))
+        card_count = 0
+    return DeckEntry(
+        path=path,
+        name=name,
+        is_current=(path == current),
+        card_count=card_count,
+    )
 
 
 def load_deck(path: Path) -> Deck:
@@ -212,6 +222,15 @@ def export_deck_to_path(
         strip_stats: Reset every card's stats in the export when True.
     """
     _storage.export_deck(source_path, dest_path, strip_stats=strip_stats)
+
+
+def delete_deck(path: Path) -> None:
+    """Permanently delete a deck file (passthrough to ``storage.delete_deck``).
+
+    Propagates ``DeckNotFoundError`` / ``StorageError`` from ``storage``
+    so the calling screen can render the failure.
+    """
+    _storage.delete_deck(path)
 
 
 def set_current_deck(path: Path) -> None:

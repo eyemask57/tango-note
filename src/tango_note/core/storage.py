@@ -17,7 +17,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from tango_note.core.exceptions import DeckNotFoundError, InvalidDeckSchemaError
+from tango_note.core.exceptions import (
+    DeckNotFoundError,
+    InvalidDeckSchemaError,
+    StorageError,
+)
 from tango_note.core.models import Card, CardStats, Deck, DeckMeta
 from tango_note.core.stats import reset_stats
 
@@ -209,6 +213,29 @@ def save_deck(deck: Deck, path: Path | str) -> None:
         json.dump(payload, f, ensure_ascii=False, indent=2)
         f.write("\n")
     tmp.replace(p)
+
+
+def delete_deck(path: Path | str) -> None:
+    """Permanently delete a deck file from disk.
+
+    This is an unconditional, unrecoverable delete: there is no trash
+    or undo. A trash / restore feature is deferred to a later version.
+
+    Args:
+        path: Path to the deck JSON file to delete.
+
+    Raises:
+        DeckNotFoundError: If no file exists at ``path``.
+        StorageError: If the file exists but the OS refuses to remove
+            it (a permission error, a lock, an I/O error, …).
+    """
+    p = Path(path)
+    if not p.is_file():
+        raise DeckNotFoundError(str(p))
+    try:
+        p.unlink()
+    except OSError as e:
+        raise StorageError(f"Failed to delete deck: {e}") from e
 
 
 def export_deck(

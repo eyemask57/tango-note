@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import tkinter as tk
 from pathlib import Path
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, font as tkfont, messagebox, ttk
 from typing import Callable, Optional
 
 from tango_note.core.config import (
@@ -77,15 +77,20 @@ def _format_notes_for_treeview(notes: str) -> str:
 class CardEditTab(ttk.Frame):
     """Treeview of all cards with a live search bar plus edit buttons.
 
+    Layout: the prominent "Add Card" button sits in the top bar next to
+    the search field; Delete / Export / Save sit in the bottom bar.
+
     Behavior while a search query is active:
 
-    * **Delete is disabled** — the selection is a subset of the deck, so
-      deleting from a filtered view is error-prone.
-    * **Add stays enabled** — blocking it would break the continuous-add
-      workflow. A card added while a filter is active is inserted into
-      the table directly (even if it does not match the filter) so it is
-      never silently invisible; the add dialog also shows a note. Such a
-      card will, however, be filtered out on the next ``refresh()``.
+    * **Delete stays enabled** — it removes exactly the row(s) selected
+      in the table, so deleting a card you found by searching works
+      naturally. The filter is kept and the visible result set is
+      recomputed afterwards.
+    * **Add stays enabled** — a card added while a filter is active is
+      inserted into the table directly (even if it does not match the
+      filter) so it is never silently invisible; the add dialog also
+      shows a note. Such a card is filtered out on the next
+      ``refresh()``.
     * Editing an existing card (double-click) stays available since it
       does not change the card set.
     """
@@ -102,36 +107,7 @@ class CardEditTab(ttk.Frame):
         self._update_save_button_state(detail.dirty)
 
     def _build(self) -> None:
-        # --- search bar ------------------------------------------------------
-        search_bar = ttk.Frame(self)
-        search_bar.pack(side="top", fill="x", padx=8, pady=(8, 0))
-        ttk.Label(search_bar, text=self.t("Search:")).pack(side="left")
-        self.search_var = tk.StringVar()
-        self.search_entry = ttk.Entry(search_bar, textvariable=self.search_var)
-        self.search_entry.pack(side="left", fill="x", expand=True, padx=4)
-        self.search_entry.bind("<KeyRelease>", self._on_search_key)
-        ttk.Button(
-            search_bar, text=self.t("Duplicates"), command=self._on_duplicates
-        ).pack(side="right")
-
-        # --- body: treeview + buttons ---------------------------------------
-        body = ttk.Frame(self)
-        body.pack(side="top", fill="both", expand=True)
-
-        # Fixed-width button column on the right, packed first so it keeps
-        # its space; the tree area takes the rest and expands.
-        btns = ttk.Frame(body)
-        btns.pack(side="right", fill="y", padx=8, pady=8)
-        self.add_btn = ttk.Button(
-            btns, text=self.t("Add card"), command=self._on_add
-        )
-        self.add_btn.pack(fill="x", pady=4)
-        self.delete_btn = ttk.Button(
-            btns, text=self.t("Delete card"), command=self._on_delete
-        )
-        self.delete_btn.pack(fill="x", pady=4)
-
-        # Highlight the Save button when the deck has unsaved changes.
+        # Restyle the Save button when the deck has unsaved changes.
         # Only the text *foreground* is restyled, never the background:
         # on the Windows "vista" ttk theme a Button's background is drawn
         # by the native renderer and ignores style.configure, whereas the
@@ -139,18 +115,70 @@ class CardEditTab(ttk.Frame):
         # gains a trailing " *", so the unsaved state stays clear even on
         # a theme that ignored the color too.
         ttk.Style().configure("Dirty.TButton", foreground="#cc3300")
-        self.save_btn = ttk.Button(
-            btns, text=self.t("Save"), command=self._on_save
-        )
-        self.save_btn.pack(fill="x", pady=(20, 4))
-        ttk.Button(btns, text=self.t("Export"), command=self._on_export).pack(
-            fill="x", pady=4
+        # "Add Card" is the most-used action, so it gets a prominent
+        # style: the navy logo color + bold text. The color is applied to
+        # the *foreground* (not the background) for the same vista-theme
+        # reason as above — a white-on-navy fill cannot be guaranteed, so
+        # navy bold text plus the leading "＋" glyph keeps the button
+        # unmistakable on every theme.
+        base_font = tkfont.nametofont("TkDefaultFont")
+        ttk.Style().configure(
+            "Primary.TButton",
+            foreground="#1e3a5f",
+            font=(base_font.cget("family"), base_font.cget("size"), "bold"),
         )
 
-        # Tree area: grid so the Treeview can carry both scrollbars and
-        # still expand on resize.
-        tree_frame = ttk.Frame(body)
-        tree_frame.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=8)
+        # --- top bar: Add Card + live search --------------------------------
+        top_bar = ttk.Frame(self)
+        top_bar.pack(side="top", fill="x", padx=8, pady=(8, 0))
+        self.add_btn = ttk.Button(
+            top_bar,
+            text="＋ " + self.t("Add Card"),
+            style="Primary.TButton",
+            command=self._on_add,
+        )
+        self.add_btn.pack(side="left", padx=(0, 8))
+        ttk.Label(top_bar, text=self.t("Search:")).pack(side="left")
+        self.search_var = tk.StringVar()
+        self.search_entry = ttk.Entry(top_bar, textvariable=self.search_var)
+        self.search_entry.pack(side="left", fill="x", expand=True, padx=4)
+        self.search_entry.bind("<KeyRelease>", self._on_search_key)
+        # A-5: ESC inside the search field clears it (keyboard shortcut).
+        self.search_entry.bind("<Escape>", lambda _e: self._clear_search())
+        self._duplicates_btn = ttk.Button(
+            top_bar, text=self.t("Duplicates"), command=self._on_duplicates
+        )
+        self._duplicates_btn.pack(side="right")
+        # A-5: one-click clear for the search bar. Created here but only
+        # packed (just left of Duplicates) while the field is non-empty —
+        # see _update_clear_button.
+        self.clear_btn = ttk.Button(
+            top_bar, text="×", width=3, command=self._clear_search
+        )
+
+        # --- bottom bar: Delete / Export / Save -----------------------------
+        bottom_bar = ttk.Frame(self)
+        bottom_bar.pack(side="bottom", fill="x", padx=8, pady=8)
+        self.delete_btn = ttk.Button(
+            bottom_bar, text=self.t("Delete card"), command=self._on_delete
+        )
+        self.delete_btn.pack(side="left")
+        ttk.Button(
+            bottom_bar, text=self.t("Export"), command=self._on_export
+        ).pack(side="left", padx=6)
+        self.save_btn = ttk.Button(
+            bottom_bar, text=self.t("Save"), command=self._on_save
+        )
+        self.save_btn.pack(side="right")
+
+        # --- card table -----------------------------------------------------
+        # Packed last so the top/bottom bars keep their space; the table
+        # takes the rest and expands. grid is used inside so the Treeview
+        # can carry both scrollbars and still grow on resize.
+        tree_frame = ttk.Frame(self)
+        tree_frame.pack(
+            side="top", fill="both", expand=True, padx=8, pady=(8, 0)
+        )
         tree_frame.rowconfigure(0, weight=1)
         tree_frame.columnconfigure(0, weight=1)
 
@@ -171,7 +199,9 @@ class CardEditTab(ttk.Frame):
         self.tree.column(
             "accuracy", minwidth=60, width=80, anchor="center", stretch=True
         )
-        vbar = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        vbar = ttk.Scrollbar(
+            tree_frame, orient="vertical", command=self.tree.yview
+        )
         hbar = ttk.Scrollbar(
             tree_frame, orient="horizontal", command=self.tree.xview
         )
@@ -213,16 +243,6 @@ class CardEditTab(ttk.Frame):
         for c in cards:
             self._insert_card_row(c)
 
-    def _update_button_states(self) -> None:
-        """Disable Delete while a search filter is active.
-
-        Add stays enabled even while filtering so the continuous-add
-        workflow is never blocked; Delete is disabled because deleting
-        from a filtered (subset) view is error-prone.
-        """
-        filtering = bool(self._search_query.strip())
-        self.delete_btn.configure(state="disabled" if filtering else "normal")
-
     def _update_save_button_state(self, dirty: bool) -> None:
         """Reflect the deck's dirty state on the Save button.
 
@@ -242,7 +262,34 @@ class CardEditTab(ttk.Frame):
     def _on_search_key(self, _event) -> None:
         self._search_query = self.search_var.get()
         self.refresh()
-        self._update_button_states()
+        self._update_clear_button()
+
+    def _clear_search(self) -> None:
+        """Clear the search field and restore the full card list (A-5).
+
+        Bound to the "×" button and to ESC inside the search entry. Focus
+        is returned to the search field so the user can immediately type
+        a new query.
+        """
+        self.search_var.set("")
+        self._search_query = ""
+        self.refresh()
+        self._update_clear_button()
+        self.search_entry.focus_set()
+
+    def _update_clear_button(self) -> None:
+        """Show the "×" clear button only while the search field has text.
+
+        The button is packed just left of the Duplicates button when the
+        field is non-empty and removed (``pack_forget``) when it is empty,
+        so it never occupies space it does not need.
+        """
+        has_text = bool(self.search_var.get())
+        managed = self.clear_btn.winfo_manager() == "pack"
+        if has_text and not managed:
+            self.clear_btn.pack(side="right", after=self._duplicates_btn)
+        elif not has_text and managed:
+            self.clear_btn.pack_forget()
 
     def _on_duplicates(self) -> None:
         groups = find_duplicates(self.detail.deck)
@@ -332,12 +379,27 @@ class CardEditTab(ttk.Frame):
         ).show()
 
     def _on_delete(self) -> None:
+        """Delete the selected card(s) after confirmation.
+
+        Works the same whether or not a search filter is active: only the
+        row(s) actually selected in the table are removed. The filter is
+        left in place and ``refresh()`` recomputes the visible result
+        set, so a deleted card disappears while the rest of the matches
+        remain.
+        """
         sel = self.tree.selection()
         if not sel:
             return
+        if len(sel) == 1:
+            card = next(
+                (c for c in self.detail.deck.cards if c.id == sel[0]), None
+            )
+            term = card.term if card is not None else ""
+            message = self.t("Delete the card '{term}'?").format(term=term)
+        else:
+            message = self.t("Delete {n} cards?").format(n=len(sel))
         if not messagebox.askyesno(
-            self.t("Are you sure?"),
-            self.t("Delete card"),
+            self.t("Delete card"), message, default=messagebox.NO
         ):
             return
         for iid in sel:
@@ -461,7 +523,10 @@ class CardDialog(tk.Toplevel):
     ) -> None:
         super().__init__(parent)
         self.t = translator
-        self.resizable(False, False)
+        # A-4: a roomy, resizable dialog so multi-line notes have space.
+        self.resizable(True, True)
+        self.geometry("500x400")
+        self.minsize(400, 300)
         self._parent_window = parent.winfo_toplevel()
         self.transient(self._parent_window)
 
@@ -539,6 +604,8 @@ class CardDialog(tk.Toplevel):
         body = ttk.Frame(self, padding=12)
         body.pack(fill="both", expand=True)
         body.columnconfigure(1, weight=1)
+        # The notes row absorbs any extra height when the dialog grows.
+        body.rowconfigure(2, weight=1)
 
         ttk.Label(body, text=self.t("Term")).grid(row=0, column=0, sticky="w", pady=4)
         self.term_var = tk.StringVar(value=self._initial[0])
@@ -557,8 +624,8 @@ class CardDialog(tk.Toplevel):
             row=2, column=0, sticky="nw", pady=4
         )
         notes_frame = ttk.Frame(body)
-        notes_frame.grid(row=2, column=1, sticky="ew", pady=4)
-        self.notes_text = tk.Text(notes_frame, width=36, height=4, wrap="word")
+        notes_frame.grid(row=2, column=1, sticky="nsew", pady=4)
+        self.notes_text = tk.Text(notes_frame, width=36, height=6, wrap="word")
         notes_scroll = ttk.Scrollbar(
             notes_frame, orient="vertical", command=self.notes_text.yview
         )

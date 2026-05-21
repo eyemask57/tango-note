@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tango-note"
-version = "1.0.0"
+version = "1.1.0"
 description = "Local vocabulary deck app with CLI and Tkinter GUI"
 readme = "README.md"
 requires-python = ">=3.10"
