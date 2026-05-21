@@ -19,7 +19,7 @@ venv/
 
 # Editor / IDE
 *.code-workspace
-.Claude/
+.claude/
 
 # NOTE: Compiled gettext catalogs (locales/*/LC_MESSAGES/*.mo) are
 # intentionally NOT ignored — they are committed so that cloning the repo
